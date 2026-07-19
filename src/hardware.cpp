@@ -232,26 +232,8 @@ void setupHardware() {
   Serial.begin(115200);
   delay(100);
 
-  static bool spiffsMounted = false;
-  if (!spiffsMounted) {
-    esp_task_wdt_reset();
-    // Tenta montar sem formatar primeiro (mais rápido)
-    if (!SPIFFS.begin(false)) {
-      Serial.println("[SPIFFS] Nao montado, tentando formatar...");
-      esp_task_wdt_reset();
-      delay(100);
-      if (!SPIFFS.begin(true)) {
-        Serial.println("[-] Falha ao montar SPIFFS");
-      } else {
-        Serial.println("[+] SPIFFS montado (formatado)");
-        spiffsMounted = true;
-      }
-    } else {
-      Serial.println("[+] SPIFFS montado");
-      spiffsMounted = true;
-    }
-    esp_task_wdt_reset();
-  }
+  // CORRECAO CRITICA: SPIFFS REMOVIDO - huge_app.csv nao tem particao SPIFFS
+  // Todas as operacoes de arquivo agora usam NVS (Preferences) ou RAM
 
   if (!prefs.begin("madcat", false)) {
     Serial.println("NVS: Erro ao abrir namespace 'madcat'");
@@ -313,7 +295,6 @@ void setupHardware() {
     ELECHOUSE_cc1101.setModulation(0);
     ELECHOUSE_cc1101.setMHZ(433.92);
 
-    // POTENCIA MAXIMA CC1101
     cc1101SetMaxPower();
 
     u8g2.drawStr(0, 25, "CC1101: OK");
@@ -422,6 +403,8 @@ void checkBackInterruptFlag() {
   }
   if (back_pressed) {
     back_pressed = false;
+    // CORRECAO CRITICA: Para qualquer ataque WiFi ativo antes de voltar ao menu
+    pararAtaqueAtual();
     current_screen = 0;
     radio.stopListening();
     ELECHOUSE_cc1101.setSidle();
