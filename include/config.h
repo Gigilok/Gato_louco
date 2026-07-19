@@ -19,7 +19,6 @@
 #include <string>
 #include <WebServer.h>
 #include <DNSServer.h>
-#include <SPIFFS.h>
 #include <esp_task_wdt.h>
 #include <driver/rmt.h>
 #include <BluetoothSerial.h>
