@@ -1,8 +1,11 @@
 // ============================================
-// DEAUTH BYPASS — stub (ESP-IDF 5.1)
+// DEAUTH BYPASS — ieee80211_raw_frame_sanity_check wrapper
+// Assinatura ESP-IDF 5.x: (int ifx, const void *buffer, int len, bool auto_seq)
 // ============================================
-// O wrap do linker foi removido do platformio.ini porque causa
-// boot loop no ESP-IDF 5.1 (assinatura da funcao mudou).
-// Frame 0xC0 eh bloqueado em firmware. Usamos 0xA0 (Disassociation)
-// em wifi_pentest.cpp como alternativa.
-// ============================================
+
+#include <stdint.h>
+
+extern "C" int __wrap_ieee80211_raw_frame_sanity_check(int ifx, const void *buffer, int len, bool auto_seq) {
+  // Retorna 0 = frame valido
+  return 0;
+}
