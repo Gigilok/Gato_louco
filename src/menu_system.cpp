@@ -361,6 +361,8 @@ void simulateButtonSelect() {
 
 void simulateButtonBack() {
   if (current_screen == 1) {
+    // CORRECAO CRITICA: Para ataques WiFi antes de simular BACK
+    pararAtaqueAtual();
     back_pressed = true;
   } else if (menuLevel == 1) {
     menuLevel = 0; selectedItem = 0; drawMenu();
