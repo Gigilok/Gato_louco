@@ -524,19 +524,34 @@ bool exportSignalToSubFormat(const CC1101Signal& sig, String& output) {
 bool saveSignalToSubFile(const char* filename, const CC1101Signal& sig) {
   String content;
   if (!exportSignalToSubFormat(sig, content)) return false;
-  File f = SPIFFS.open(filename, "w");
-  if (!f) return false;
-  f.print(content);
-  f.close();
+  // CORRECAO: Sem SPIFFS - usa NVS (Preferences)
+  String key = String("sub_") + filename;
+  key.replace("/", "_");
+  key.replace(".", "_");
+  if (key.length() > 15) key = key.substring(0, 15);  // NVS limite de chave
+  prefs.putString(key.c_str(), content);
+  Serial.printf("[SUB] Salvo em NVS: %s (%d bytes)\n", key.c_str(), content.length());
   return true;
 }
 
 bool loadSignalFromSubFile(const char* filename, CC1101Signal& sig) {
-  File f = SPIFFS.open(filename, "r");
-  if (!f) return false;
+  // CORRECAO: Sem SPIFFS - usa NVS (Preferences)
+  String key = String("sub_") + filename;
+  key.replace("/", "_");
+  key.replace(".", "_");
+  if (key.length() > 15) key = key.substring(0, 15);
+
+  if (!prefs.isKey(key.c_str())) return false;
+
+  String content = prefs.getString(key.c_str(), "");
+  if (content.isEmpty()) return false;
+
   memset(&sig, 0, sizeof(CC1101Signal));
-  while (f.available()) {
-    String line = f.readStringUntil('\n');
+  int pos = 0;
+  while (pos < content.length()) {
+    int end = content.indexOf('\n', pos);
+    if (end == -1) end = content.length();
+    String line = content.substring(pos, end);
     line.trim();
     if (line.startsWith("Frequency:")) {
       sig.frequency = line.substring(10).toInt();
@@ -558,8 +573,9 @@ bool loadSignalFromSubFile(const char* filename, CC1101Signal& sig) {
       }
       sig.dataLength = idx;
     }
+    pos = end + 1;
   }
-  f.close();
+  Serial.printf("[SUB] Carregado de NVS: %s (%d pulsos)\n", key.c_str(), sig.dataLength);
   return sig.dataLength > 0;
 }
 
