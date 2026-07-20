@@ -1,1 +1,1 @@
-// Stub vazio — wrap removido para teste
+// Stub vazio — ESP-IDF 5.1 bloqueia management frames em firmware
