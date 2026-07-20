@@ -12,12 +12,15 @@
 // ============================================
 
 #include <stdint.h>
+#include <stdbool.h>
 
 // Função original (será renomeada pelo linker)
-extern "C" int __real_ieee80211_raw_frame_sanity_check(int32_t arg, int32_t arg2, int32_t arg3);
+// CORREÇÃO CRÍTICA: assinatura com 4 parâmetros (ESP-IDF 5.x / Arduino-ESP32 v2.0.17+)
+extern "C" int __real_ieee80211_raw_frame_sanity_check(int ifx, const void *buffer, int len, bool auto_seq);
 
 // Wrapper: sempre retorna 0 (OK), permitindo qualquer frame type
-extern "C" int __wrap_ieee80211_raw_frame_sanity_check(int32_t arg, int32_t arg2, int32_t arg3) {
+// CORREÇÃO CRÍTICA: assinatura deve bater EXATAMENTE com a original
+extern "C" int __wrap_ieee80211_raw_frame_sanity_check(int ifx, const void *buffer, int len, bool auto_seq) {
   // Retorna 0 = frame é válido, pode ser transmitido
   return 0;
 }
